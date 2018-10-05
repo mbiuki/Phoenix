@@ -5,7 +5,11 @@
 % $  $
 % $ Date: October 2018 $
 % ==============================================================================
-function [ P,Gam, LYP_FOUND ] = train( trainFolder, dimension, Eps )
+function [ P, Gam, maxJVar, lypFound ] = train( trainFolder, ...
+                                                fixedRows, ...
+                                                dimension, ...
+                                                Eps, ...
+                                                trainerDecisionMetric_Thd )
 % Goal: Find a valid Lyapunov Polynomial
 %   This function given a set of traces will find the Lypunov function
 
@@ -15,22 +19,38 @@ function [ P,Gam, LYP_FOUND ] = train( trainFolder, dimension, Eps )
       uiwait(warndlg(errorMessage));
       return;
     end
-    filePattern = fullfile(trainFolder, '*.csv'); % Change to whatever pattern you need.
+    filePattern = fullfile(trainFolder, '*.csv');
     theFiles = dir(filePattern);
+    numOfFiles = length(theFiles);
 
-    for k = 1 : length(theFiles)
-      baseFileName = theFiles(k).name;
-      %fullFileName = fullfile(myFolder, baseFileName);
-      %fprintf(1, 'Now reading %s\n', fullFileName);
-      Trace(k,:,:)=csvread(fullfile(trainFolder, baseFileName),1,1);
+    for k = 1 : numOfFiles
+      fileName = theFiles(k).name;
+      % Every File is a Trace
+      Temp=csvread(fullfile(trainFolder, fileName),1,1);
+      Trace(k,:,:)=Temp(1:fixedRows,:);
     end
 
-    Trace_list=[1 2 3 4];
-    LYP_FOUND = false;
+    % Some initial set of traces
+%     Trace_list=[1 2 3 4];
+    Trace_list=[1];
+   
+    maxJVar = 0;
+    
+    % default Flags
+    lypFound = false;
+    loopFlag = false;
+    falsifierFlag = false;
+    
     Trace_Counter = length(Trace_list)-1;
-     while(false == LYP_FOUND)         
-         Trace_Counter=Trace_Counter+1;
-         cvx_begin
+    
+    % counter and the time recording params
+    startFindingNewLyp = 0;
+    total_algorithmTime = 0; 
+
+    while(( false == lypFound) && (false == loopFlag) )
+        Trace_Counter = Trace_Counter+1;
+        tStart = tic;
+        cvx_begin
             variable P(dimension,dimension);
             variable Gam;
             v=@(x) x'*P*x;
@@ -47,41 +67,59 @@ function [ P,Gam, LYP_FOUND ] = train( trainFolder, dimension, Eps )
                     end
                 end
                 Gam >= Eps;
-         cvx_end
-         
-         %----------Flasifier part--------------------------         
-         if cvx_status=='Solved'
-             for m = Trace_Counter+1 : length(theFiles)
-                 PHI_Falsifier=permute(Trace(m,:,:), [2 3 1]);
-                 v=@(x) x'*P*x;
-                 func=@(ind_i,ind_j) v(PHI_Falsifier(ind_i, :).') - ...
-                                     v(PHI_Falsifier(ind_i+ind_j,:).') - ...
-                                     Gam*norm(PHI_Falsifier(ind_i,:),2)^2;
-                 for ind_i=1:size(PHI_Falsifier,1)-1
-                     J_var(ind_i)=func(ind_i,1);
-                 end
-                 Decision_Metric = mean((J_var/max(J_var)) < -0.01)
-                 if Decision_Metric > 0
-                     Trace_list = [Trace_list m];
-                     break; 
-                 end
-             end
-             
-             if  m==length(theFiles)
-                 display(['LYAP. is found'])
-                 LYP_FOUND = true;
-                 break;
-             else
-                 display(['Trace number ', num2str(m), ...
+        cvx_end
+        algorithmTime = toc(tStart);
+        dlmwrite('algorithmTime.csv',algorithmTime,'delimiter',',','-append');
+        fclose('all');
+        total_algorithmTime = total_algorithmTime + algorithmTime;
+        
+        %----------Flasifier part--------------------------
+        if cvx_status=='Solved'
+            for m = Trace_Counter+1 : numOfFiles
+                PHI_Falsifier = permute(Trace(m,:,:), [2 3 1]);
+                v=@(x) x'*P*x;
+                func=@(ind_i,ind_j) v(PHI_Falsifier(ind_i, :).') - ...
+                                    v(PHI_Falsifier(ind_i+ind_j,:).') - ...
+                                    Gam*norm(PHI_Falsifier(ind_i,:),2)^2;
+                for ind_i=1:size(PHI_Falsifier,1)-1
+                     J_var(ind_i) = func(ind_i,1);
+                end
+                 
+%                 Decision_Metric = mean( (J_var/max(J_var)) < ...
+%                                          trainerDecisionMetric_Thd )
+
+%                  cprintf('Text', '\n=Im here2\n');
+                Decision_Metric = sum(  J_var/max(J_var) .* ...
+                                     ( (J_var/max(J_var) ) < 0) );
+                maxJVar = 0.99*maxJVar+.01*max(J_var);
+                
+                % add and redo
+                if Decision_Metric < trainerDecisionMetric_Thd
+                    Trace_list = [Trace_list m];
+                    falsifierFlag = true;
+                    
+                    startFindingNewLyp = startFindingNewLyp + 1
+                    cprintf('Text', '\n-------Im here\n');
+                    break; 
+                end
+            end
+            
+            if  falsifierFlag==false
+                display(['LYAP. is found'])
+                lypFound = true;
+                break;
+            else
+                display(['Trace number ', num2str(m), ...
                           ' added to trce list for LF finding...']);
-                      
-                 %  LYP_FOUND= flase;
-                 %  fprintf('NO LYAPUNOV found')
-             end
-         else
-             display('No solution found');
-             break;
-         end
-     end
+                falsifierFlag = false;
+            end
+        else
+            display('No Lyapunov solution found');
+            break;
+        end
+    end
+    cprintf('Text', 'new starovers = %d\n ', startFindingNewLyp);
+    algorithmTime
+    total_algorithmTime   
 end
 %% EoF

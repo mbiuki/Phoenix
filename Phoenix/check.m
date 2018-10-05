@@ -5,7 +5,12 @@
 % $  $
 % $ Date: October 2018 $
 % ==============================================================================
-function [ fake, correct ] = check(testFolder, P, Gam )
+function [ fake, correct ] = check( testFolder, ...
+                                    testFileFixedRows, ...
+                                    P, ...
+                                    Gam, ...
+                                    maxJVar, ...
+                                    checkerDecisionMetric_Thd )
 % Checking Traces in the Test Folder
 %   This function checks if the data are fake or real
     display(['Checking Traces in the Test Folder > > >'])
@@ -22,10 +27,11 @@ function [ fake, correct ] = check(testFolder, P, Gam )
     correct = 0;
 
     for k = 1 : length(theFiles)
-        baseFileName = theFiles(k).name;
-        %fullFileName = fullfile(testFolder, baseFileName);
-        %fprintf(1, 'Now reading %s\n', fullFileName);        
-        PHI_Falsifier_v=csvread(fullfile(testFolder, baseFileName),1,1);
+        testFileName = theFiles(k).name;    
+        
+        Temp = csvread(fullfile(testFolder, testFileName),1,1);
+        PHI_Falsifier_v = Temp(1:testFileFixedRows,:);
+%         PHI_Falsifier_v=csvread(fullfile(testFolder, testFileName),1,1);
         % accuracy maximum - 
         %accuracy 10 meter https://en.wikipedia.org/wiki/Decimal_degrees
         %PHI_Falsifier(:,[2])=PHI_Falsifier(:,[2]) + ...
@@ -36,19 +42,21 @@ function [ fake, correct ] = check(testFolder, P, Gam )
         % learning no processing power needed, low 
         % drone limited resource-constrained no nueral net needed
         func_v=@(ind_i,ind_j) v_v(PHI_Falsifier_v(ind_i, :).') - ...
-                    v_v(PHI_Falsifier_v(ind_i+ind_j,:).') - ...
-                       Gam*norm(PHI_Falsifier_v(ind_i,:),2)^2; 
+                              v_v(PHI_Falsifier_v(ind_i+ind_j,:).') - ...
+                              Gam*norm(PHI_Falsifier_v(ind_i,:),2)^2; 
                    
-        for ind_i=1:size(PHI_Falsifier_v,1)-1
-            J_var_v(ind_i)=func_v(ind_i,1);
+        for ind_i = 1:size(PHI_Falsifier_v,1)-1
+            J_var_v(ind_i) = func_v(ind_i,1);
         end
         
-        Decision_Metric_v=sum(J_var_v/max(J_var_v) .* ...
-                                    ((J_var_v/max(J_var_v))<0));
+        % 
+%         Decision_Metric_v = sum( J_var_v/max(J_var_v) .* ...
+%                                ( (J_var_v/max(J_var_v)) < 0 ) );
+        Decision_Metric_v = sum(  J_var_v/maxJVar .* ...
+                               ( (J_var_v/max(J_var_v)) < 0 ));
 
-        DM_Thd = -1e-3;
         cprintf('> Trace is = ')
-        if Decision_Metric_v < DM_Thd
+        if Decision_Metric_v < checkerDecisionMetric_Thd
             cprintf('Errors','Fake');
             fake = fake +1;
         else
@@ -58,7 +66,7 @@ function [ fake, correct ] = check(testFolder, P, Gam )
         cprintf('Text',', ');
         cprintf('Text','Decision_Metric = %s', num2str(Decision_Metric_v));
         cprintf('Text','. File= ');
-        cprintf('Hyperlinks','%s\n', baseFileName);
+        cprintf('Hyperlinks','%s\n', testFileName);
     end
 end
 %% EoF

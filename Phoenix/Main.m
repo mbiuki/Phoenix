@@ -1,5 +1,6 @@
 %% Function Name: main Lyapunov runner function
-%
+%  University of British Columbia (UBC)
+%  Security of IoT Lab
 % Assumptions: dimensions are known
 %
 % Inputs:
@@ -10,7 +11,7 @@
 % Outputs:
 %   none
 %
-%
+% $Author: Mehdi Karimi
 % $Date: September 27, 2018
 % ________________________________________
 

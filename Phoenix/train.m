@@ -2,7 +2,7 @@
 % ==============================================================================
 % $ University of British Columbia (UBC) $
 % $ Security of IoT Systems Lab $
-% $  $
+% $ Author: Mehdi Karimi $
 % $ Date: October 2018 $
 % ==============================================================================
 function [ P, Gam, maxJVar, lypFound ] = train( trainFolder, ...

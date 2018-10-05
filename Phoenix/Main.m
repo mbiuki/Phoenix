@@ -62,7 +62,8 @@ testFileFixedRows = 30;
 % ax^2 + bx + c --> find the roots, beine do rishe
 
 % ===== Variables ===================
-checkerDecisionMetric_Thd = -0.4; % threshold of the checker
+% checkerDecisionMetric_Thd = -0.4; % threshold of the checker
+checkerDecisionMetric_Thd = -1e-3; % threshold of the checker
 trainerDecisionMetric_Thd = -1e-3; % threshold of the trainer
 % ===================================
 

@@ -14,5 +14,6 @@ To evaluate Phoenix in a real-world environment, we have also constructed a cust
 The authentication code that reads traces and tells if the trace is fake or real.
 ### DoS_attack folder
 Scripts for flooding telemetry and experiencing drones with DoS.
+- A short video of our DoS trial attack is [here](https://youtu.be/SrJvO4RwMUQ).
 ### earthToCartesian
 converting the earth coordinates to cartesian and then referencing from the origin of flight.

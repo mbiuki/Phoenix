@@ -4,65 +4,16 @@ March 2019
 Mehdi Karimi
 Description: 
 Function generalization
-Convert Earth Coordinates to Cartesian
+drop all trajectories on to a single line
 '''
+import os
 import math
 import csv
 import matplotlib.pyplot as plt
+import earthConverter
 
 # MACROS
 num_of_csv = 3
-
-def wgs84ToCartesian(inp_altitude, inp_latitude, inp_longitude):
-	'''
-	main conversion method
-	:param inp_altitude: altitude of the drone
-	:param inp_latitude: latitude of the drone
-	:param inp_longitude: longitude of the drone
-	:return:
-	'''
-	altitude = math.radians(inp_altitude)
-	latitude = math.radians(inp_latitude)
-	longitude = math.radians(inp_longitude)
-
-	POLAR_SEMI_MAJOR_AXIS = 6356752.314245
-	EQUITORIAL_SEMI_MINOR_AXIS = 6378137.0
-	FLATTENING_FACTOR = 1 - EQUITORIAL_SEMI_MINOR_AXIS / POLAR_SEMI_MAJOR_AXIS
-	ECCENTRICITY_SQUARED = 2 * FLATTENING_FACTOR - FLATTENING_FACTOR ** 2
-	n_denom = math.sqrt(1 - ECCENTRICITY_SQUARED * math.sin(latitude) ** 2)
-	r = POLAR_SEMI_MAJOR_AXIS / n_denom
-
-	z = abs(((1 - ECCENTRICITY_SQUARED) * r + altitude) * math.sin(latitude))
-	x = (r + altitude) * math.cos(latitude) * math.cos(longitude)
-	y = (r + altitude) * math.cos(latitude) * math.sin(longitude)
-
-	return x, y, z,
-
-def make_xyzcoords():
-	'''
-	callout the conversion
-	automatically read the csv files and do the conversion
-	:return:
-	'''
-	for i in range(1, num_of_csv + 1):
-		with open('%d_earthwgs84.csv'%i, 'r') as csvfile:
-			wgs_reader = csv.reader(csvfile, delimiter=',')
-			altlatlon = []
-			first_row_flag = True
-			for row in wgs_reader:
-				if first_row_flag == True:
-					first_row_flag = False
-					continue
-				index = row[0]
-				coords = [float(cell) for cell in row[1:4]]
-				altlatlon.append(wgs84ToCartesian(coords[0],coords[1],coords[2]))
-
-		title = ['X (meters)', 'Y (meters)', 'Z (meters)']
-		with open('%d_xyzcoords.csv'%i, 'w', newline='') as csvfile:
-			xyzwriter = csv.writer(csvfile)
-			xyzwriter.writerow(title)
-			for li in altlatlon:
-				xyzwriter.writerow(li)
 
 def make_graph():
 	'''
@@ -100,6 +51,66 @@ def make_graph():
 	plt.legend()
 	plt.show()
 
+def generalize(row):
+	'''
+	generalize each row
+	:param row:
+	:return:
+	'''
+	global prev_row, prev_row_general
+	#calculate distance travelled between two points
+	a = row[0] - prev_row[0]
+	b = row[1] - prev_row[1]
+	length = math.sqrt(a ** 2 + b ** 2)
+	#plot distance on 45 degree line
+	increment = math.sqrt(length ** 2 / 2)
+	row_generalized = [x + increment for x in prev_row_general]
+
+	prev_row = row
+	prev_row_general = row_generalized
+
+	return row_generalized
+
 if __name__ == "__main__":
-	make_xyzcoords()
-	make_graph()
+
+	#convert coords to cartesion
+	earthConverter.convert()
+
+	#create list of csv files with _cartesian
+	files = [f for f in os.listdir() if os.path.isfile(f)]
+	csv_files = [f for f in files if '_cartesian.csv' in f]
+
+	for file in csv_files:
+
+		#variables
+		prev_row = [0, 0]
+		prev_row_general = [0, 0]
+
+		#name output file
+		file_split = os.path.splitext(file)
+		output_file = file_split[0] + '_generalized' + file_split[1]
+
+		#check if file exists, and remove if it does
+		if os.path.isfile(output_file):
+
+			os.remove(output_file)
+
+		#opens new file and writes header
+		output_csv = open(output_file, 'w', newline = '')
+		csv.writer(output_csv).writerow(['x', 'y'])
+
+		#open csv
+		with open(file, newline = '') as csv_file:
+
+			csvreader = csv.reader(csv_file)
+
+			#skip first line
+			next(csvreader)
+
+			#parse csv
+			for row in csvreader:
+				#set prev_row if first line of data
+				if csvreader.line_num == 2:
+					prev_row = [float(x) for x in row]
+				#generalize and write to file
+				csv.writer(output_csv).writerow(generalize([float(row[0]), float(row[1])]))

@@ -4,7 +4,7 @@ March 2019
 Mehdi Karimi
 Description: 
 Function generalization
-drop all trajectories on to a single line
+drop all trajectories on to x=y line
 '''
 import os
 import math
@@ -12,24 +12,33 @@ import csv
 import matplotlib.pyplot as plt
 import earthConverter
 
-# MACROS
-num_of_csv = 3
+"""
+path_to_dir is the folder that has sample trajectories
+for conversion
+"""
+path_to_dir = "./sample_trajecotries"
+FIRST_ROW = True
 
 def make_graph():
 	'''
+	this is under development, not working yet
 	make the nice graph
 	:return:
 	'''
 	toplot = dict()
-	for i in range(1, num_of_csv + 1):
-		with open('%d_xyzcoords.csv'%i, 'r') as csvfile:
-			wgs_reader = csv.reader(csvfile, delimiter=',')
-			first_row_flag = True
+
+	genFiles = []
+	for file in earthConverter.list_csv_files(path_to_dir, suffix="_cartesian_generalized.csv"):
+		genFiles.append(os.path.join(path_to_dir, file))
+
+	for file in genFiles:
+		with open(file,'r') as f1:
+			wgs_reader = csv.reader(f1)
 			x = []
 			y = []
 			for row in wgs_reader:
-				if first_row_flag == True:
-					first_row_flag = False
+				if FIRST_ROW == True:
+					FIRST_ROW = False
 					continue
 				x.append(float(row[0]))
 				y.append(float(row[1]))
@@ -62,7 +71,7 @@ def generalize(row):
 	a = row[0] - prev_row[0]
 	b = row[1] - prev_row[1]
 	length = math.sqrt(a ** 2 + b ** 2)
-	#plot distance on 45 degree line
+	#plot distance on 45 degree line x=y
 	increment = math.sqrt(length ** 2 / 2)
 	row_generalized = [x + increment for x in prev_row_general]
 
@@ -76,11 +85,11 @@ if __name__ == "__main__":
 	#convert coords to cartesion
 	earthConverter.convert()
 
-	#create list of csv files with _cartesian
-	files = [f for f in os.listdir() if os.path.isfile(f)]
-	csv_files = [f for f in files if '_cartesian.csv' in f]
+	cartesianFiles = []
+	for file in earthConverter.list_csv_files(path_to_dir,suffix="_cartesian.csv"):
+		cartesianFiles.append(os.path.join(path_to_dir, file))
 
-	for file in csv_files:
+	for file in cartesianFiles:
 
 		#variables
 		prev_row = [0, 0]
@@ -92,7 +101,6 @@ if __name__ == "__main__":
 
 		#check if file exists, and remove if it does
 		if os.path.isfile(output_file):
-
 			os.remove(output_file)
 
 		#opens new file and writes header
@@ -101,12 +109,10 @@ if __name__ == "__main__":
 
 		#open csv
 		with open(file, newline = '') as csv_file:
-
 			csvreader = csv.reader(csv_file)
 
 			#skip first line
 			next(csvreader)
-
 			#parse csv
 			for row in csvreader:
 				#set prev_row if first line of data
@@ -114,3 +120,5 @@ if __name__ == "__main__":
 					prev_row = [float(x) for x in row]
 				#generalize and write to file
 				csv.writer(output_csv).writerow(generalize([float(row[0]), float(row[1])]))
+
+#EoF

@@ -34,8 +34,8 @@ Steps:
 Requirements:
 - matplotlib
 
-##Input files go in samples folder
-###Run generalization.py to get a graph on the axis x=y=z (don't use this, use the one below!)
-###Run normalization.py to get a normalized graph (vector starts at (0, 0, 0) and goes in positive axes)
+## Input files go in samples folder
+### Run generalization.py to get a graph on the axis x=y=z (don't use this, use the one below!)
+### Run normalization.py to get a normalized graph (vector starts at (0, 0, 0) and goes in positive axes)
 
 #EoF

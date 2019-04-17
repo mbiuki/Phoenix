@@ -38,4 +38,11 @@ Requirements:
 ##### Run generalization.py to get a graph on the axis x=y=z (don't use this, use the one below!)
 ### Run normalization.py to get a normalized graph (vector starts at (0, 0, 0) and goes in positive axes)
 
+
+Sample output of the generalization: 
+![alt text][output]
+
+[output]: https://github.com/mbiuki/Phoenix/blob/master/earthToCartesian/1_cartesian.png "Sample output of generalization"
+
+
 #EoF

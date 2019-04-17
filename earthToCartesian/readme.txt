@@ -21,4 +21,21 @@ Actions:
 - modify output to multiple files
 - Generalized data by:
     - Using Pythagorean Theorem to get the distance travelled between each point
-    - using Pythagorean Theorem to plot the distance on a 45 degree line
+    - using Pythagorean Theorem to plot the distance and their projections
+
+Plotting using python in a 3d space:
+- https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
+
+Steps:
+- output to folders and to generalize 3 axes
+- add normalization for 3 axes
+- add plotting to both files
+
+Requirements:
+- matplotlib
+
+##Input files go in samples folder
+###Run generalization.py to get a graph on the axis x=y=z (don't use this, use the one below!)
+###Run normalization.py to get a normalized graph (vector starts at (0, 0, 0) and goes in positive axes)
+
+#EoF

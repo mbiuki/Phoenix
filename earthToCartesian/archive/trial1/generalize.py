@@ -10,7 +10,7 @@ import os
 import math
 import csv
 import matplotlib.pyplot as plt
-import earthConverter
+from archive.trial1 import earthConverter
 
 """
 path_to_dir is the folder that has sample trajectories
@@ -86,7 +86,7 @@ if __name__ == "__main__":
 	earthConverter.convert()
 
 	cartesianFiles = []
-	for file in earthConverter.list_csv_files(path_to_dir,suffix="_cartesian.csv"):
+	for file in earthConverter.list_csv_files(path_to_dir, suffix="_cartesian.csv"):
 		cartesianFiles.append(os.path.join(path_to_dir, file))
 
 	for file in cartesianFiles:

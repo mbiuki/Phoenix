@@ -10,6 +10,8 @@ To evaluate Phoenix in a real-world environment, we have also constructed a cust
 - [Link3](https://youtu.be/-af6N7HLg3Y)
 
 ## Below is the folder hierarchy
+### Trajecotry
+List of sample trajecotries in different drone modes of operation.
 ### Phoenix folder
 The authentication code that reads traces and tells if the trace is fake or real.
 ### DoS_attack folder

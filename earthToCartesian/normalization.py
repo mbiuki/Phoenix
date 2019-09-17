@@ -2,7 +2,6 @@
 UBC Security of IoT Lab
 April 2019
 Mehdi Karimi
-Description:
 Description:  normalization and save as .png 
 '''
 import os

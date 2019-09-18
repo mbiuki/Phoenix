@@ -1,1 +1,2 @@
-Real-world data set by running a PixHawk DIY drone.
+* Real-world data set by running a PixHawk DIY drone.
+* We only can show real world data set for the location where we are. We cannot show dataset for other geographical locations since demonstrting real data required us to travel to other corners of the world to collect time-series and we could not afford it.

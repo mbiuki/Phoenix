@@ -1,5 +1,5 @@
 # Trajectory :rocket:
-### Different data set 
+### Different data sets 
 I have provided some trajecotry traces of a quadcopter drone flying in Ardupilot SITL in 3 different earth paths.
 The coordinates and ranges are as following:
 

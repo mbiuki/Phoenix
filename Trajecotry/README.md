@@ -1,7 +1,7 @@
 # Trajectory :rocket:
-### 6 different data set 
-I have provided trajecotry traces of a drone flying in Ardupilot SITL with 6 different earth paths.
-The coordinates are as following:
+### Different data set 
+I have provided some trajecotry traces of a quadcopter drone flying in Ardupilot SITL in 3 different earth paths.
+The coordinates and ranges are as following:
 
 | Path Number | Path Name   | Range (meters) | Origin (Latitude, Longitude) | Destination (Latitude, Longitude) |
 |-------------|-------------|:--------------:|:----------------------------:|:---------------------------------:|

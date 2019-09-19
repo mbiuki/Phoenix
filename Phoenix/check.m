@@ -2,14 +2,13 @@
 % ==============================================================================
 % $ University of British Columbia (UBC) $
 % $ Security of IoT Systems Lab $
-% $ Author: Mehdi Karimi $
+% $  $
 % $ Date: October 2018 $
 % ==============================================================================
 function [ fake, correct ] = check( testFolder, ...
                                     testFileFixedRows, ...
                                     P, ...
                                     Gam, ...
-                                    maxJVar, ...
                                     checkerDecisionMetric_Thd )
 % Checking Traces in the Test Folder
 %   This function checks if the data are fake or real
@@ -49,11 +48,9 @@ function [ fake, correct ] = check( testFolder, ...
             J_var_v(ind_i) = func_v(ind_i,1);
         end
         
-        % 
-%         Decision_Metric_v = sum( J_var_v/max(J_var_v) .* ...
-%                                ( (J_var_v/max(J_var_v)) < 0 ) );
-        Decision_Metric_v = sum(  J_var_v/maxJVar .* ...
-                               ( (J_var_v/max(J_var_v)) < 0 ));
+        % calculates negatives in the current evaluating trace:                           
+        Decision_Metric_v = sum( (J_var_v/(max(J_var_v) - min(J_var_v)))...
+                              .* (J_var_v < 0 ));
 
         cprintf('> Trace is = ')
         if Decision_Metric_v < checkerDecisionMetric_Thd
@@ -64,9 +61,9 @@ function [ fake, correct ] = check( testFolder, ...
             correct = correct + 1;
         end
         cprintf('Text',', ');
-        cprintf('Text','Decision_Metric = %s', num2str(Decision_Metric_v));
+        cprintf('Text','Decision_Metric = %f', Decision_Metric_v);
         cprintf('Text','. File= ');
-        cprintf('Hyperlinks','%s\n', testFileName);
+        cprintf('Hyperlinks','\n%s\n', testFileName);
     end
 end
 %% EoF

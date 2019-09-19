@@ -1,6 +1,5 @@
 %% Function Name: main Lyapunov runner function
-%  University of British Columbia (UBC)
-%  Security of IoT Lab
+% Mehdi Karimi -- UBC IoT Security Lab
 % Assumptions: dimensions are known
 %
 % Inputs:
@@ -11,71 +10,55 @@
 % Outputs:
 %   none
 %
-% $Author: Mehdi Karimi
+%
 % $Date: September 27, 2018
+% Modified: Sept 18, 2019
 % ________________________________________
 
 % if you want to create a stability function from scratch
-findLyap_fromScratch = false;
+findLyap_fromScratch = true;
 % ========================
 format long g
-clc;
-addpath cprintf;
+clc; 
 close all;
+
+% TODO: Would need to run CVX_begin in cvx folder first
 if (findLyap_fromScratch)
     clear all;
+    addpath cprintf;
+    addpath sosopt;
 end
 
 LypAlreadyCalculated = logical( exist( 'P' ,'var') && exist( 'Gam' ,'var') );
 
 %----------------------------------------
 % === Train and Test Folders ===========
-% testFolder = '.\Test_dataSet\72datapts';
-% testFolder = '.\Test_dataSet\1_UBC\detour\noWind';
-% testFolder = '.\Train_datset\1_UBC\real\1';
-% testFolder = '.\Test_dataSet\oneUBC';
-testFolder = '.\Test_dataSet\oneMonash';
-% testFolder = '.\Test_dataSet\oneCMAC';
-% testFolder = '.\Test_dataSet\oneCarstensz';
-% testFolder = '.\Test_dataSet\oneSnarbyeidet';
+trainFolder ='.\trainData\1_UBC\noWind\one';
+testFolder = '.\testData\1_UBC\one';
 
-%  testFolder = '.\Test_dataSet\forDemo';
-% testFolder = '.\Test_dataSet\path4_Snarbyeidet';
-% testFolder = '.\Test_dataSet\Snarbyeidet_wind';
-% testFolder = '.\Test_dataSet\snarbyeidet';
-% testFolder = '.\Test_dataSet\snarbyeidet2';
-% testFolder = '.\Train_datset\UBC_3_61E';
-
-% trainFolder = '.\Train_datset\initial';
-% trainFolder = '.\Train_datset\path4_Snarbyeidet';
-% trainFolder = '.\Test_dataSet\snarbyeidet';
-% trainFolder = '.\Train_datset\sample_real';
-trainFolder = '.\Train_datset\1_UBC\noWind\1';
 % =======================================
 % === Parameters ========================
-Eps = 0.01;
+Eps = 0.00001;
 dimension = 6;
 
-fixedRows = 70;
-testFileFixedRows = 30;
+% fixedRows = 70;
+fixedRows = 50;
+testFileFixedRows = 50;
 % ======================================
 
-% ax^2 + bx + c --> find the roots, beine do rishe
-
-% ===== Variables ===================
-% checkerDecisionMetric_Thd = -0.4; % threshold of the checker
-checkerDecisionMetric_Thd = -1e-3; % threshold of the checker
-trainerDecisionMetric_Thd = -1e-3; % threshold of the trainer
-% ===================================
+% ===== Thresholds =====================
+initTrainThresh = -0.001; % initial threshold of the trainer
+%checkerDecisionMetric_Thd = -0.1; % TODO, remove threshold of the checker
+% =====================================
 
 % Training Section:
 if (~LypAlreadyCalculated || findLyap_fromScratch)
     overalT = tic;
-    [P, Gam, maxJVar, lypFound] = train( trainFolder, ...
+    [P, Gam, lypFound, decisionMetricThreshold] = train( trainFolder, ...
                                  fixedRows, ...
                                  dimension, ...
                                  Eps, ...
-                                 trainerDecisionMetric_Thd );
+                                 initTrainThresh );
     timeTrained = toc(overalT);
     dlmwrite('timeTrained.csv',timeTrained,'delimiter',',','-append');
     fclose('all');
@@ -88,13 +71,13 @@ if true == lypFound
                              testFileFixedRows, ...
                              P, ...
                              Gam, ...
-                             maxJVar, ...
-                             checkerDecisionMetric_Thd );
+                             decisionMetricThreshold );
     cprintf('*Red', 'Number of Fakes = %d\n', fake);
     cprintf('*Blue','Number of Corrects = %d\n', correct);
     toc
-%     cprintf('false positive','%s\n', correct / (fake+correct));
-    cprintf('*Blue','false negative = %f\n', (correct / (fake+correct))*100);    
+    cprintf('*Blue','Traces that was identified to be correct = %%%0.2f\n', (correct / (fake+correct))*100); 
+    cprintf('*Red','Traces that was identified to be false = %%%0.2f\n', (fake / (fake+correct))*100); 
+
 end
 
 %% EoF

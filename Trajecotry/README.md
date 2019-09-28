@@ -15,4 +15,5 @@ The coordinates and ranges are as following:
 ### Takeoff
 ### Landing
 ### Loiter
+#### Reference: http://ardupilot.org/copter/docs/flight-modes.html
 

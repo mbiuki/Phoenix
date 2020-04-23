@@ -13,7 +13,7 @@ To evaluate Phoenix in a real-world environment, we have also constructed a cust
 ### Trajectory
 List of sample trajecotries in different drone modes of operation.
 ### Phoenix folder
-The authentication code that reads traces and tells if the trace is fake or real.
+The code that is based on the Lyapunov stability criteria. It reads traces and tells if the trace is fake or real.
 ### DoS_attack folder
 Scripts for flooding telemetry and experiencing drones with DoS.
 - A short video of possible drone DoS attack is [here](https://youtu.be/SrJvO4RwMUQ).
